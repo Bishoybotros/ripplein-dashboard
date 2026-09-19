@@ -1,0 +1,60 @@
+/* RIPPLEIN LTD. — Design tokens.
+   مصنع + ملف موظف + شركة تقنية. ألوان مسطّحة، حدود حادة، ظلال صُلبة بلا بلور. */
+:root {
+  /* الألوان الأساسية */
+  --ink: #0A0A0A;
+  --paper: #FFFFFF;
+  --hazard: #FFC400;   /* أصفر صناعي — تحذيرات ونداءات الفعل */
+  --current: #1769FF;  /* أزرق كهربي — البيانات */
+  --impact: #FF2B8A;   /* وردي — لحظة التأثير */
+  --go: #14C38E;       /* أخضر — تأكيد */
+
+  /* الرماديات */
+  --concrete: #F2F1EE;
+  --concrete-2: #E4E2DC;
+  --steel: #B6B3AA;
+  --graphite: #6E6B63;
+  --ink-2: #1C1C1A;
+  --ink-3: #2B2B28;
+
+  /* الخطوط */
+  --font-ar: 'Tajawal', system-ui, 'Segoe UI', sans-serif;
+  --font-display: 'Space Grotesk', 'Tajawal', sans-serif;
+  --font-mono: 'Space Mono', ui-monospace, monospace;
+
+  /* مقياس الحجم (1.25) */
+  --t-xs: 0.75rem;
+  --t-sm: 0.875rem;
+  --t-base: 1rem;
+  --t-md: 1.25rem;
+  --t-lg: 1.563rem;
+  --t-xl: 1.953rem;
+  --t-2xl: 2.441rem;
+  --t-3xl: clamp(2.6rem, 7vw, 4.7rem);
+
+  /* المسافات */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --s-7: 48px;
+  --s-8: 72px;
+
+  --radius: 3px;
+  --radius-lg: 6px;
+  --line: 1.5px solid var(--ink);
+  --shadow-hard: 4px 4px 0 var(--ink);
+  --shadow-hard-sm: 2px 2px 0 var(--ink);
+  --maxw: 1180px;
+}
+
+/* شريط التحذير الصناعي — نمط وليس تدرّج زخرفي */
+.hazard-bar {
+  height: 8px;
+  background-image: repeating-linear-gradient(
+    -45deg, var(--hazard) 0 10px, var(--ink) 10px 20px
+  );
+}
+.hazard-bar--thin { height: 5px; }
