@@ -422,3 +422,31 @@ button, input, select, textarea { font: inherit; color: inherit; }
     transition-duration: 0.001ms !important;
   }
 }
+
+/* ================= اختيار متعدد للمشاركين ================= */
+
+.picker {
+  border: var(--line); border-radius: var(--radius); background: var(--paper);
+  max-height: 320px; overflow-y: auto;
+}
+.picker__row {
+  display: grid; grid-template-columns: 22px 1fr auto; gap: var(--s-3); align-items: center;
+  padding: 9px 12px; border-bottom: 1.5px solid var(--concrete-2); cursor: pointer;
+}
+.picker__row:last-child { border-bottom: 0; }
+.picker__row:hover { background: var(--concrete); }
+.picker__row.is-on { background: #FFFBE6; }
+.picker__row input { width: 18px; height: 18px; accent-color: var(--ink); margin: 0; }
+.picker__meta { font-size: var(--t-xs); color: var(--graphite); }
+
+.picker__bar {
+  display: flex; align-items: center; gap: var(--s-2); flex-wrap: wrap;
+  border: var(--line); border-radius: var(--radius); background: var(--ink); color: var(--paper);
+  padding: 8px 12px;
+}
+.picker__count { font-family: var(--font-display); font-variant-numeric: tabular-nums; color: var(--hazard); }
+
+.name-list { display: flex; flex-wrap: wrap; gap: 4px; max-height: 120px; overflow-y: auto; }
+.name-list span {
+  border: 1.5px solid var(--concrete-2); border-radius: 999px; padding: 2px 9px; font-size: var(--t-xs);
+}

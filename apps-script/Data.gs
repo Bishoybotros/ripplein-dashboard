@@ -64,6 +64,18 @@ function appendRow_(name, obj) {
   invalidate_(name);
 }
 
+/** كتابة عدة صفوف دفعة واحدة — أسرع بكتير من appendRow في حلقة. */
+function appendRows_(name, objects) {
+  if (!objects.length) return;
+  var headers = HEADERS[name];
+  var rows = objects.map(function (obj) {
+    return headers.map(function (h) { return obj[h] === undefined ? '' : obj[h]; });
+  });
+  var sh = sheet_(name);
+  sh.getRange(sh.getLastRow() + 1, 1, rows.length, headers.length).setValues(rows);
+  invalidate_(name);
+}
+
 function updateCell_(name, rowIndex, column, value) {
   var col = HEADERS[name].indexOf(column) + 1;
   if (col < 1) throw new ApiError('BAD_COLUMN', 'عمود غير معروف: ' + column);

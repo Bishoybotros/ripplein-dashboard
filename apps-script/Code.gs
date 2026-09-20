@@ -72,6 +72,7 @@ function route_(action, p, method) {
     case 'adminLogin': return post_(method) && handleAdminLogin_(p);
     case 'logout': return post_(method) && handleLogout_(p);
     case 'addTransaction': return post_(method) && handleAddTransaction_(p);
+    case 'addTransactionBulk': return post_(method) && handleAddTransactionBulk_(p);
     case 'reverseTransaction': return post_(method) && handleReverse_(p);
     case 'submitButterflyMoment': return post_(method) && handleButterflySubmit_(p);
     case 'updateParticipant': return post_(method) && handleUpdateParticipant_(p);
@@ -356,6 +357,126 @@ function handleAddTransaction_(p) {
     participant: after,
     levelUp: levelAfter.code !== levelBefore.code && (after ? after.points : 0) > before ? levelAfter : null,
     enteredTop10: after && after.rank <= 10 ? after.rank : null
+  };
+}
+
+/**
+ * تسجيل نفس التأثير لأكثر من مشارك في عملية واحدة.
+ * معاملة مستقلة لكل شخص (السجل يفضل دقيق)، لكن كتابة واحدة وقفل واحد.
+ */
+function handleAddTransactionBulk_(p) {
+  var session = auth_(p, 'admin');
+  if (String(getSettings_().isScoringOpen) === 'false') {
+    throw new ApiError('SCORING_CLOSED', 'تسجيل النقاط مقفول حاليًا من الإعدادات.');
+  }
+
+  var ids = p.participantIds;
+  if (typeof ids === 'string') { try { ids = JSON.parse(ids); } catch (e) { ids = String(ids).split(','); } }
+  if (!ids || !ids.length) throw new ApiError('BAD_INPUT', 'اختر مشاركًا واحدًا على الأقل.');
+  if (ids.length > 200) throw new ApiError('TOO_MANY', 'الحد الأقصى 200 مشارك في العملية الواحدة.');
+
+  var points = Number(p.points);
+  var reason = String(p.reason || '').trim();
+  var categoryId = String(p.category || '').trim().toUpperCase();
+  if (!isFinite(points) || points === 0) throw new ApiError('BAD_POINTS', 'عدد النقاط غير صحيح.');
+  if (Math.abs(points) > 5000) throw new ApiError('BAD_POINTS', 'الحد الأقصى للمعاملة الواحدة هو 5000 نقطة.');
+  if (reason.length > 300) throw new ApiError('BAD_INPUT', 'السبب طويل جدًا.');
+
+  var category = null;
+  activeCategories_().forEach(function (c) { if (c.id === categoryId) category = c; });
+  if (!category) throw new ApiError('BAD_CATEGORY', 'هذا التصنيف غير موجود أو غير مفعّل.');
+
+  // فهرس المشاركين مرة واحدة + تنقية التكرار
+  var index = {};
+  readTable_(SHEETS.PARTICIPANTS).forEach(function (r) {
+    index[String(r.id).toUpperCase()] = r;
+    index[String(r.employeeId || r.id).toUpperCase()] = r;
+  });
+
+  var levels = getLevels_();
+  var beforeById = {};
+  buildLeaderboard_().forEach(function (b) { beforeById[b.id] = b.points; });
+
+  var targets = [], skipped = [], seen = {};
+  ids.forEach(function (raw) {
+    var key = String(raw || '').trim().toUpperCase();
+    if (!key) return;
+    var found = index[key];
+    if (!found) { skipped.push({ id: key, reason: 'غير موجود' }); return; }
+    if (String(found.status || 'ACTIVE').toUpperCase() === 'INACTIVE') {
+      skipped.push({ id: key, reason: 'موقوف' });
+      return;
+    }
+    if (seen[String(found.id)]) return;
+    seen[String(found.id)] = true;
+    targets.push(found);
+  });
+  if (!targets.length) throw new ApiError('NOT_FOUND', 'مفيش أي مشارك صالح في التحديد.');
+
+  var created = withLock_(function () {
+    var start = 0;
+    readTable_(SHEETS.TRANSACTIONS, false).forEach(function (t) {
+      var m = String(t.id || '').match(/(\d+)\s*$/);
+      if (m) start = Math.max(start, parseInt(m[1], 10));
+    });
+    var day = getSettings_().currentDay;
+    var stamp = now_();
+
+    var rows = targets.map(function (participant, i) {
+      var n = String(start + i + 1);
+      while (n.length < 5) n = '0' + n;
+      return {
+        id: 'TX-' + n,
+        participantId: String(participant.id),
+        employeeId: String(participant.employeeId || participant.id),
+        participantName: participant.displayName || participant.name,
+        teamId: participant.teamId || '',
+        teamName: participant.teamName || '',
+        type: points < 0 ? 'PENALTY' : (category.type || 'BONUS'),
+        category: category.id,
+        points: points,
+        reason: reason,
+        adminId: session.sub,
+        createdAt: stamp,
+        reversed: false,
+        reversedAt: '',
+        reversedBy: '',
+        metadata: JSON.stringify({ categoryName: category.nameAr, day: day, batch: true })
+      };
+    });
+    appendRows_(SHEETS.TRANSACTIONS, rows);
+    invalidateAll_();
+    return rows;
+  });
+
+  logActivity_('ADD_TRANSACTION_BULK', session.sub, '',
+    { count: created.length, points: points, category: category.id, ids: created.map(function (r) { return r.employeeId; }) });
+
+  // مين صعد مستوى ومين دخل Top 10 بعد العملية
+  var board = buildLeaderboard_();
+  var levelUps = [], enteredTop10 = [];
+  targets.forEach(function (t) {
+    var id = String(t.id);
+    var after = null;
+    board.forEach(function (b) { if (b.id === id) after = b; });
+    if (!after) return;
+    var before = beforeById[id] || 0;
+    if (after.points <= before) return;
+    if (levelFor_(after.points, levels).code !== levelFor_(before, levels).code) {
+      levelUps.push({ name: after.name, employeeId: after.employeeId, level: after.level });
+    }
+    if (after.rank <= 10) enteredTop10.push({ name: after.name, rank: after.rank });
+  });
+
+  return {
+    created: created.length,
+    pointsEach: points,
+    totalPoints: points * created.length,
+    category: category.id,
+    transactions: created,
+    skipped: skipped,
+    levelUps: levelUps,
+    enteredTop10: enteredTop10
   };
 }
 

@@ -95,6 +95,33 @@ check('اتبلّغ عن صعود مستوى', jump.data.levelUp && jump.data.le
 check('اتبلّغ عن دخول Top 10', jump.data.enteredTop10 === 1, String(jump.data.enteredTop10));
 check('بقى رقم 1', ctx.buildLeaderboard_()[0].employeeId === 'RPL-0002');
 
+console.log('\n== تسجيل جماعي ==');
+const teamOf2 = ctx.buildLeaderboard_().filter((p) => p.teamId === 'TEAM-02').map((p) => p.employeeId);
+const beforeBulk = Object.fromEntries(ctx.buildLeaderboard_().map((p) => [p.employeeId, p.points]));
+const bulk = call({
+  action: 'addTransactionBulk', token: aToken, participantIds: teamOf2,
+  category: 'SESSION', points: 10, reason: 'حضروا الجلسة',
+});
+check('التسجيل الجماعي نجح', bulk.ok === true, JSON.stringify(bulk.error || ''));
+check('عدد المعاملات = عدد المحددين', bulk.data.created === teamOf2.length, `${bulk.data.created} vs ${teamOf2.length}`);
+const afterBulk = Object.fromEntries(ctx.buildLeaderboard_().map((p) => [p.employeeId, p.points]));
+check('كل واحد خد 10 بالظبط', teamOf2.every((id) => afterBulk[id] === beforeBulk[id] + 10));
+check('محدش تاني اتأثر', Object.keys(beforeBulk).filter((id) => !teamOf2.includes(id)).every((id) => afterBulk[id] === beforeBulk[id]));
+check('أرقام المعاملات متسلسلة وفريدة', new Set(bulk.data.transactions.map((t) => t.id)).size === teamOf2.length);
+check('كل المعاملات موجودة في الشيت', bulk.data.transactions.every((t) => ctx.readTable_('Transactions', false).some((r) => r.id === t.id)));
+const dup = call({
+  action: 'addTransactionBulk', token: aToken,
+  participantIds: ['RPL-0003', 'RPL-0003', 'RPL-9999', 'RPL-0004'],
+  category: 'SERVICE', points: 50, reason: 'تكرار',
+});
+check('التكرار بيتشال', dup.data.created === 2, String(dup.data.created));
+check('المشارك غير الموجود بيتسجل في skipped', dup.data.skipped.length === 1 && dup.data.skipped[0].id === 'RPL-9999');
+check('قائمة فاضية ترفض', call({ action: 'addTransactionBulk', token: aToken, participantIds: [], category: 'BONUS', points: 10 }).ok === false);
+check('المشارك مش بيقدر يسجل جماعي', call({ action: 'addTransactionBulk', token: pToken, participantIds: ['RPL-0001'], category: 'BONUS', points: 10 }).ok === false);
+check('تصنيف غلط في الجماعي يترفض', call({ action: 'addTransactionBulk', token: aToken, participantIds: ['RPL-0001'], category: 'NOPE', points: 10 }).ok === false);
+const upLevels = call({ action: 'addTransactionBulk', token: aToken, participantIds: ['RPL-0005', 'RPL-0006'], category: 'BONUS', points: 900, reason: 'قفزة جماعية' });
+check('بيرجّع مين صعد مستوى', upLevels.data.levelUps.length === 2, JSON.stringify(upLevels.data.levelUps.length));
+
 console.log('\n== الفرق ==');
 const teams = ctx.buildTeams_();
 const sumTeams = teams.reduce((s, t) => s + t.totalPoints, 0);

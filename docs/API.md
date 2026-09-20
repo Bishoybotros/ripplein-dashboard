@@ -53,6 +53,7 @@
 | `adminLogin` | `username`, `secret` | عام |
 | `logout` | `token` | أي جلسة |
 | `addTransaction` | `token`, `participantId`, `category`, `points`, `reason?` | أدمن |
+| `addTransactionBulk` | `token`, `participantIds[]`, `category`, `points`, `reason?` | أدمن |
 | `reverseTransaction` | `token`, `transactionId` | أدمن |
 | `submitButterflyMoment` | `token`, `answer`, `visibility?` | مشارك |
 | `createParticipant` | `token`, `name`, `employeeId?`, `teamId?`, `pin?`, `phone?` | أدمن |
@@ -91,6 +92,43 @@ POST /exec
 
 `levelUp` بيرجع `null` لو المستوى ماتغيرش — الواجهة بتستخدمه لعرض نافذة الترقية.
 
+### مثال — تسجيل جماعي
+
+```json
+POST /exec
+{
+  "action": "addTransactionBulk",
+  "token": "…",
+  "participantIds": ["RPL-0264", "RPL-0102", "RPL-0077"],
+  "category": "SESSION",
+  "points": 10,
+  "reason": "حضروا الجلسة كاملة"
+}
+```
+
+الرد:
+
+```json
+{
+  "ok": true,
+  "data": {
+    "created": 3,
+    "pointsEach": 10,
+    "totalPoints": 30,
+    "transactions": [{ "id": "TX-00051", "…": "…" }],
+    "skipped": [],
+    "levelUps": [{ "name": "…", "employeeId": "RPL-0102", "level": { "code": "RIPPLE" } }],
+    "enteredTop10": [{ "name": "…", "rank": 7 }]
+  }
+}
+```
+
+- معاملة مستقلة لكل مشارك — التراجع بيتم لكل واحد لوحده والسجل يفضل دقيق.
+- كتابة واحدة على الشيت داخل قفل واحد، فالعملية سريعة حتى مع ١٠٠ شخص.
+- التكرار في `participantIds` بيتشال تلقائيًا.
+- المشارك غير الموجود أو الموقوف بيتحط في `skipped` والباقي بيكمل عادي.
+- الحد الأقصى ٢٠٠ مشارك في العملية الواحدة (`TOO_MANY`).
+
 ## أكواد الأخطاء
 
 | الكود | المعنى |
@@ -103,6 +141,7 @@ POST /exec
 | `DUPLICATE` | رقم موظف مستخدم |
 | `ALREADY_REVERSED` | تم التراجع عن المعاملة من قبل |
 | `SCORING_CLOSED` | التسجيل مقفول من الإعدادات |
+| `TOO_MANY` | تجاوزت حد المشاركين في العملية الواحدة |
 | `BUSY` | قفل الكتابة مشغول — أعد المحاولة |
 | `METHOD` | إجراء كتابة اتبعت بـ GET |
 | `NOT_CONFIGURED` | `ADMIN_SECRET` مش مضبوط |

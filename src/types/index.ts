@@ -160,3 +160,14 @@ export interface AddTransactionResult {
   levelUp: Level | null;
   enteredTop10: number | null;
 }
+
+export interface BulkResult {
+  created: number;
+  pointsEach: number;
+  totalPoints: number;
+  category: string;
+  transactions: Transaction[];
+  skipped: { id: string; reason: string }[];
+  levelUps: { name: string; employeeId: string; level: Level }[];
+  enteredTop10: { name: string; rank: number }[];
+}
