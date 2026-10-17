@@ -43,22 +43,22 @@ Level thresholds are configurable from the Settings sheet, not hard-coded.
 
 <p align="center">
   <img src="participant-login.png" width="23%" alt="Employee login with Employee ID and PIN">
-  <img src="docs/screenshots/participant-dashboard.png" width="23%" alt="Participant dashboard showing points, level and rank">
-  <img src="docs/screenshots/participant-history.png" width="23%" alt="Impact history with categories and timestamps">
-  <img src="docs/screenshots/radar.png" width="23%" alt="Ripple Radar live ranking with progress bars">
+  <img src="participant-dashboard.png" width="23%" alt="Participant dashboard showing points, level and rank">
+  <img src="participant-history.png" width="23%" alt="Impact history with categories and timestamps">
+  <img src="radar.png" width="23%" alt="Ripple Radar live ranking with progress bars">
 </p>
 
 ### Organizers
 
 <p align="center">
-  <img src="docs/screenshots/admin-control-room.png" width="62%" alt="Admin control room with stats and quick score">
-  <img src="docs/screenshots/admin-bulk-score.png" width="36%" alt="Quick score with team filter and multi-select">
+  <img src="admin-control-room.png" width="62%" alt="Admin control room with stats and quick score">
+  <img src="admin-bulk-score.png" width="36%" alt="Quick score with team filter and multi-select">
 </p>
 
 ### Event screen
 
 <p align="center">
-  <img src="docs/screenshots/scoreboard.png" width="80%" alt="Fullscreen Ripple Radar scoreboard for projectors">
+  <img src="scoreboard.png" width="80%" alt="Fullscreen Ripple Radar scoreboard for projectors">
 </p>
 
 ## Features
