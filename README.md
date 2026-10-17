@@ -1,213 +1,219 @@
-# RIPPLEIN LTD. — IMPACT MANAGEMENT SYSTEM
+<div align="center">
 
-نظام إدارة التأثير لمؤتمر **RIPPLE 2026**.
-موقع كامل قابل للتشغيل: واجهة على GitHub Pages، وAPI على Google Apps Script، وقاعدة بيانات على Google Sheets.
+# RIPPLEIN LTD. — Impact Management System
 
-> ONE DROP. ENDLESS IMPACT. — قطرة واحدة… تأثير بلا حدود.
+**ONE DROP. ENDLESS IMPACT.** · قطرة واحدة… تأثير بلا حدود
 
----
+A live-event gamification platform built for **RIPPLE 2026**, a youth conference.
+Participants join a fictional company, earn *Ripple Points*, level up, and climb a live ranking.
+Organizers run everything from a control room. Arabic RTL-first, serverless, zero cost.
 
-## المعمارية
+[**Live demo**](https://bishoybotros.github.io/ripplein-dashboard/) ·
+[Setup guide](docs/SETUP.md) ·
+[API](docs/API.md) ·
+[دليل التشغيل بالعربي](docs/GUIDE_AR.md)
 
-```
-المتصفح / الموبايل / شاشة المؤتمر
-            │
-            ▼
-   GitHub Pages  ·  React + Vite + TypeScript (HashRouter)
-            │  fetch
-            │  GET  → query params
-            │  POST → body JSON بـ Content-Type: text/plain (تفاديًا لـ CORS preflight)
-            ▼
-   Google Apps Script Web App  ·  doGet / doPost
-            │  مصادقة بتوكن جلسة + LockService + CacheService
-            ▼
-   Google Sheets  ·  RIPPLEIN_DATABASE (8 جداول)
-```
+![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-5-646CFF?logo=vite&logoColor=white)
+![Google Apps Script](https://img.shields.io/badge/Backend-Google%20Apps%20Script-4285F4?logo=google&logoColor=white)
+![GitHub Pages](https://img.shields.io/badge/Hosting-GitHub%20Pages-181717?logo=github&logoColor=white)
 
-**قاعدة ذهبية:** جدول `Transactions` هو مصدر الحقيقة الوحيد.
-`totalPoints` في `Participants` مجرد قيمة محفوظة للعرض داخل الشيت — النظام بيحسب كل شيء من المعاملات.
-الترتيب والمستويات ومجاميع الفرق كلها **محسوبة لحظيًا**.
+</div>
 
-### ليه الاختيارات دي
-
-| القرار | السبب |
-|---|---|
-| HashRouter مش BrowserRouter | GitHub Pages مش بيعمل rewrite للمسارات؛ الهاش بيشتغل من غير أي إعداد أو ملف 404 |
-| CSS خام بنظام tokens | أخف من Tailwind، وبيدّي الهوية الصناعية تحكّمًا كاملًا، وبناء أسرع |
-| `Content-Type: text/plain` في POST | Apps Script مبيردّش على طلب OPTIONS، فلازم يفضل الطلب "simple request" |
-| توكن جلسة بدل كلمة سر مع كل طلب | كلمة السر مبتتخزنش في المتصفح إطلاقًا |
-| `id` = `employeeId` للمشارك | بيلغي طبقة lookup كاملة ويبسّط الروابط |
+> The landing page is public. Participant and admin areas require credentials issued by the organizers.
+> All screenshots below use demo data with fictional first names.
 
 ---
 
-## التشغيل من الصفر — ٨ خطوات
+## The idea
 
-### 1) Google Sheet
-أنشئ spreadsheet جديد واسمّيه `RIPPLEIN_DATABASE`.
+Most conference scoreboards are a table. This one is a world.
 
-### 2) Apps Script
-من الشيت: **Extensions → Apps Script**.
-امسح `Code.gs` الافتراضي، وأنشئ الملفات دي وانسخ محتواها من مجلد `apps-script/`:
-`Config.gs` · `Data.gs` · `Code.gs` · `Setup.gs`
+Every participant joins **RIPPLEIN LTD.**, a fictional company that measures one thing: **impact**.
+They get an Employee ID, complete missions, collect **RP (Ripple Points)**, unlock badges, and move through five levels:
 
-### 3) إنشاء الجداول
-من قائمة الدوال اختر **`installDatabase`** ثم Run، ووافق على الصلاحيات.
-هيتعمل: الجداول الثمانية + التصنيفات + ٤ فرق + إعدادات + أدمن باسم `admin`.
+`Drop` → `Ripple` → `Wave` → `Impact` → `Ripple Maker`
 
-### 4) كلمة سر الأدمن
-**Project Settings ← Script Properties ← Add script property**
+Level thresholds are configurable from the Settings sheet, not hard-coded.
 
-| Property | Value |
+## Screenshots
+
+### Participant
+
+<p align="center">
+  <img src="docs/screenshots/participant-login.png" width="23%" alt="Employee login with Employee ID and PIN">
+  <img src="docs/screenshots/participant-dashboard.png" width="23%" alt="Participant dashboard showing points, level and rank">
+  <img src="docs/screenshots/participant-history.png" width="23%" alt="Impact history with categories and timestamps">
+  <img src="docs/screenshots/radar.png" width="23%" alt="Ripple Radar live ranking with progress bars">
+</p>
+
+### Organizers
+
+<p align="center">
+  <img src="docs/screenshots/admin-control-room.png" width="62%" alt="Admin control room with stats and quick score">
+  <img src="docs/screenshots/admin-bulk-score.png" width="36%" alt="Quick score with team filter and multi-select">
+</p>
+
+### Event screen
+
+<p align="center">
+  <img src="docs/screenshots/scoreboard.png" width="80%" alt="Fullscreen Ripple Radar scoreboard for projectors">
+</p>
+
+## Features
+
+**Participants**
+- Profile with points, level, rank, and progress to the next level
+- Impact history for every transaction
+- Ten badges derived from activity, unlocked automatically
+- Live ranking radar with team and level on every row
+- Butterfly Moment: a private reflection, visible only to the participant and organizers
+
+**Organizers**
+- Control room with stats, search, filters (participant, team, category, date), and CSV export
+- **Quick Score** with team filter and multi-select: award one impact to a whole team in a single operation
+- Penalties and **undo** that never delete a record
+- Participant and team management, plus a settings page for day, levels, and scoring on/off
+- Every admin action is written to an activity log
+- Fullscreen **Event Screen** that refreshes itself, with no controls on it
+
+**Platform**
+- Ranks, totals, and levels are computed from the transaction log, never typed by hand
+- Participants cannot change points, rank, team, or level, and cannot open another participant's profile
+- Arabic RTL-first UI, bilingual system labels, mobile first
+- Accessibility: semantic HTML, keyboard navigation, visible focus, skip link, `prefers-reduced-motion`
+
+## Architecture
+
+```mermaid
+flowchart LR
+  A["Browser<br/>React + Vite + TypeScript<br/>GitHub Pages"] -->|"GET / POST (text/plain)"| B["Google Apps Script<br/>Web App API"]
+  B -->|"batch reads / writes"| C[("Google Sheets<br/>RIPPLEIN_DATABASE")]
+  B --- D["LockService · CacheService<br/>Script Properties"]
+```
+
+| Decision | Why |
 |---|---|
-| `ADMIN_SECRET` | كلمة السر اللي هتدخل بيها غرفة التحكم |
+| **Transactions are the source of truth** | `totalPoints` in the sheet is only a cached value. Every total, rank, and level is recomputed from valid transactions. |
+| **Undo = `reversed: true`** | The row stays, with `reversedAt` and `reversedBy`, so the audit trail is complete. |
+| **Server-side authorization** | The frontend is public. Every write checks a session token and role inside Apps Script. |
+| **Session tokens in `CacheService`** | Six-hour expiry, renewed on use. No password is stored in the browser. |
+| **`LockService` around writes** | Two admins scoring at the same moment cannot collide. |
+| **Bulk endpoint** | One lock and one sheet write for up to 200 participants, still one independent transaction per person. |
+| **POST as `text/plain`** | Keeps it a "simple" CORS request. Apps Script does not answer preflight (`OPTIONS`). |
+| **`HashRouter`** | GitHub Pages does not rewrite routes, so hash routes work with no extra setup. |
+| **Polling, not WebSockets** | Google Sheets is not a realtime database. Polling is configurable and pauses when the tab is hidden. |
 
-كلمة السر دي مش بتتخزن في الكود ولا في الشيت ولا في الموقع.
-لو عايز كلمة سر مستقلة لكل أدمن: `ADMIN_SECRET_<USERNAME>` بحروف كبيرة، مثلًا `ADMIN_SECRET_MINA`.
+## Tech stack
 
-### 5) النشر
-**Deploy → New deployment → Web app**
-
-| الحقل | القيمة |
+| Layer | Choice |
 |---|---|
-| Execute as | **Me** |
-| Who has access | **Anyone** |
+| Frontend | React 18, TypeScript, Vite, React Router (hash) |
+| Styling | Plain CSS with design tokens. No UI framework. |
+| Backend | Google Apps Script Web App (`doGet` / `doPost`) |
+| Database | Google Sheets (8 tabs) |
+| Hosting | GitHub Pages, deployed by GitHub Actions on every push to `main` |
+| Fonts | Tajawal, Space Grotesk, Space Mono |
 
-انسخ الـ Web app URL — بينتهي بـ `/exec`.
+The production bundle is about 73 KB of gzipped JavaScript.
 
-> مهم: بعد أي تعديل في الكود لازم **Deploy → Manage deployments → Edit → Version: New version**، وإلا الموقع هيفضل شغال على النسخة القديمة.
+## Data model
 
-### 6) ربط الواجهة
-محليًا:
+`Participants` · `Teams` · `Transactions` · `Categories` · `Admins` · `Settings` · `ActivityLog` · `ButterflyMoments`
+
+Full column definitions are in [docs/SHEETS_SCHEMA.md](docs/SHEETS_SCHEMA.md).
+
+## Quick start
+
+**1. Backend (Google)**
+1. Create a Google Sheet named `RIPPLEIN_DATABASE`.
+2. **Extensions → Apps Script**, then paste the four files from [`apps-script/`](apps-script/).
+3. Run `installDatabase()` once to create the tabs, categories, teams, and settings.
+4. **Project Settings → Script Properties**: add `ADMIN_SECRET`.
+5. **Deploy → New deployment → Web app**, Execute as **Me**, access **Anyone**. Copy the `/exec` URL.
+
+**2. Frontend**
 ```bash
-cp .env.example .env
-# ضع الرابط في VITE_API_URL
+git clone https://github.com/bishoybotros/ripplein-dashboard.git
+cd ripplein-dashboard
 npm install
+cp .env.example .env      # set VITE_API_URL to your /exec URL
 npm run dev
 ```
 
-### 7) GitHub
-```bash
-git init && git add . && git commit -m "RIPPLEIN LTD. impact system"
-git branch -M main
-git remote add origin https://github.com/<username>/ripplein-dashboard.git
-git push -u origin main
-```
-
-### 8) GitHub Pages
+**3. Deploy**
 - **Settings → Pages → Source: GitHub Actions**
-- **Settings → Secrets and variables → Actions → Variables → New repository variable**
+- **Settings → Secrets and variables → Actions → Variables**: add `VITE_API_URL`
+- Push to `main`. The workflow builds and publishes the site.
 
-| Name | Value |
+Detailed steps, permissions, and troubleshooting: [docs/SETUP.md](docs/SETUP.md) and [docs/GUIDE_AR.md](docs/GUIDE_AR.md).
+
+Optional: run `seedSampleData()` to try the system with demo participants.
+
+## API
+
+One endpoint, JSON in and out. Reads use `GET`, writes use `POST`.
+
+| Access | Actions |
 |---|---|
-| `VITE_API_URL` | رابط الـ Web App بتاعك |
+| Public | `getBootstrap`, `getLeaderboard`, `getTeams`, `getTeam`, `getStats`, `getCategories`, `getSettings` |
+| Participant | `login`, `logout`, `getParticipant`, `getTransactions`, `getMyButterfly`, `submitButterflyMoment` |
+| Admin | `adminLogin`, `addTransaction`, `addTransactionBulk`, `reverseTransaction`, `createParticipant`, `updateParticipant`, `createTeam`, `updateSettings`, `recalculate`, `adminGet*` |
 
-أي push على `main` هيبني وينشر تلقائيًا. الموقع هيبقى على:
-`https://<username>.github.io/ripplein-dashboard/`
+Responses look like `{ "ok": true, "data": … }` or `{ "ok": false, "error": { "code", "message" } }`.
+Reference: [docs/API.md](docs/API.md).
 
----
-
-## المسارات
-
-| المسار | الوصف | الصلاحية |
-|---|---|---|
-| `#/` | استقبال الشركة | عام |
-| `#/login` | دخول المشارك | عام |
-| `#/dashboard` | لوحة المشارك | مشارك |
-| `#/participant?id=RPL-0264` | ملف موظف | صاحب الملف أو أدمن |
-| `#/leaderboard` · `#/top10` | رادار الريبل | عام |
-| `#/scoreboard` | شاشة المؤتمر الكاملة | عام |
-| `#/teams` · `#/team?id=TEAM-01` | الفرق | عام |
-| `#/missions` | مهام التأثير + جدول النقاط | عام |
-| `#/butterfly` | لحظة الفراشة | مشارك |
-| `#/admin` | غرفة التحكم | أدمن |
-| `#/admin/transactions` · `participants` · `teams` · `butterfly` · `settings` | إدارة | أدمن |
-
-للشاشة الكبيرة: افتح `#/scoreboard` واضغط F11. مفيهاش أي أزرار تحكم.
-
----
-
-## الاستخدام اليومي
-
-**إضافة نقاط:** غرفة التحكم ← تسجيل تأثير سريع ← فلتر بالفريق أو ابحث بالاسم/رقم الموظف ← علّم على اللي عايزهم (أو «تحديد الكل») ← اختر التصنيف (النقاط بتتحط تلقائيًا) ← السبب ← تأكيد.
-
-**تسجيل جماعي:** اختر الفريق من الفلتر واضغط «تحديد الكل» — كل واحد بياخد معاملة مستقلة بنفس النقاط في عملية واحدة على الخادم. مفيد لحضور الجلسة أو تحدي نفّذه فريق كامل. التراجع بيفضل لكل شخص لوحده.
-
-**خصم نقاط:** نفس الخطوات بنقاط بالسالب أو تصنيف `PENALTY`. مفيش حذف — كل حاجة بتتسجّل.
-
-**التراجع:** المعاملات ← تراجع. المعاملة بتفضل في الشيت بـ `reversed = true` وبتتشال من الحساب. السجل بيفضل كامل.
-
-**تسجيل مشارك:** المشاركون ← تسجيل موظف. لو سِبت رقم الموظف فاضي هيتولّد تلقائيًا، ونفس الشيء للرقم السري — وهيظهرلك بعد التسجيل عشان تديهوله.
-
-**الأرقام السرية:** المشاركون ← إظهار الأرقام السرية. موجودة في عمود `pin` في الشيت وبتفضل عندك إنت بس.
-
-**قفل التسجيل:** الإعدادات ← «تسجيل النقاط مقفول». مفيد قبل إعلان النتيجة.
-
-**تصفير قبل المؤتمر:** شغّل `resetTransactions()` من Apps Script. بيمسح النقاط والسجل ويسيب المشاركين والفرق.
-
-**عدّلت الشيت بإيدك؟** الإعدادات ← إعادة حساب كل شيء (أو `recalculateEverything()`).
-
----
-
-## الأمان باختصار
-
-- مفيش أي سر في الواجهة. الموقع كله public ومفيهوش غير `VITE_API_URL`.
-- `ADMIN_SECRET` في Script Properties بس.
-- كل عمليات الكتابة بتتحقق من التوكن **على الخادم** — الحماية في الواجهة للتجربة بس.
-- المشارك مش بيقدر يشوف ملف غيره حتى لو غيّر الـ `id` في الرابط (مُختبَر).
-- المشارك مش بيقدر يضيف أو يعدّل نقاط أبدًا.
-- `LockService` بيمنع تضارب لو أكتر من أدمن بيضيف في نفس اللحظة.
-- إجابات لحظة الفراشة **خاصة افتراضيًا**.
-
-التفاصيل في [`docs/SECURITY.md`](docs/SECURITY.md).
-
----
-
-## الاختبارات
+## Testing
 
 ```bash
-npm run test:api   # 66 اختبار لمنطق الـ backend بمحاكاة Google Sheets
+npm run test:api     # 66 backend tests
 npm run typecheck
 npm run build
 ```
 
-قائمة الاختبار اليدوي قبل المؤتمر في [`docs/TESTING.md`](docs/TESTING.md).
+The backend tests run the real `Code.gs` and `Data.gs` against an in-memory simulation of Sheets, Cache, Lock, and Properties, so no Google account is needed.
+They cover authorization, input validation, scoring, penalties, undo, bulk scoring, level-ups, team totals, sessions, and settings.
 
----
+A manual checklist for event day is in [docs/TESTING.md](docs/TESTING.md).
 
-## حل المشاكل
+## Security
 
-| العرض | السبب والحل |
-|---|---|
-| «لم يتم ربط النظام بقاعدة البيانات» | `VITE_API_URL` فاضي أو لسه `YOUR_APPS_SCRIPT_URL`. في GitHub لازم يكون **Variable** مش Secret، وبعد إضافته أعد تشغيل الـ workflow |
-| خطأ CORS في الكونسول | غالبًا النشر على **Who has access: Anyone**. متستخدمش `Content-Type: application/json` في POST — ده بيسبّب preflight وApps Script مش بيردّ عليه |
-| صفحة تسجيل دخول Google بترجع بدل البيانات | النشر مضبوط على "Only myself". غيّرها لـ Anyone وأعد النشر بنسخة جديدة |
-| التعديلات مش ظاهرة | نشرت من غير **New version** |
-| «الجدول غير موجود» | مشغلتش `installDatabase()` |
-| «لم يتم ضبط ADMIN_SECRET» | ضيفه في Script Properties |
-| 404 على GitHub Pages | Pages لازم تكون Source: GitHub Actions، والمسارات كلها بعد `#` |
-| النقاط مش بتتحدث فورًا | الكاش ٥ ثواني + التحديث الدوري. الرقم قابل للتعديل من الإعدادات |
-| بطء عند التحميل | أول طلب لـ Apps Script بياخد ثانيتين تقريبًا. عادي |
+- No secrets in the frontend or the repository. `VITE_API_URL` is the only variable, and it is public.
+- `ADMIN_SECRET` lives in Apps Script Script Properties.
+- Participants see only their own data, even if the URL `id` is changed (covered by tests).
+- Butterfly Moment answers are private by default and never exposed by a public endpoint.
 
----
+Details and accepted trade-offs: [docs/SECURITY.md](docs/SECURITY.md).
 
-## بنية المشروع
+## Known limitations
+
+- Updates arrive by polling, so there is a short delay (default 8 seconds, configurable).
+- Apps Script has daily quotas. For more than a few hundred participants, raise the refresh interval.
+- Participant PINs are stored as text in a private sheet. This is a deliberate trade-off so organizers can help anyone who forgets theirs.
+- Leaderboard data is public by design, because it is shown on the event screen.
+
+## Project structure
 
 ```
 ripplein-dashboard/
-├── apps-script/          Config.gs · Data.gs · Code.gs · Setup.gs · tests/
-├── docs/                 SETUP · API · SECURITY · SHEETS_SCHEMA · TESTING
+├── apps-script/        Config.gs · Data.gs · Code.gs · Setup.gs · tests/
+├── docs/               SETUP · API · SECURITY · SHEETS_SCHEMA · TESTING · GUIDE_AR
 ├── src/
-│   ├── components/       store · Layout · UI · QuickScore · RankList · Canister …
-│   ├── pages/            الصفحات العامة + admin/
-│   ├── services/         api · session
-│   ├── hooks/            usePolling
-│   ├── utils/            levels · format · csv
-│   └── styles/           tokens.css · global.css
-└── .github/workflows/deploy.yml
+│   ├── components/     layout, UI kit, QuickScore, RankList, Canister …
+│   ├── pages/          public pages and admin/
+│   ├── services/       API client, session
+│   ├── hooks/          usePolling
+│   ├── utils/          levels, formatting, CSV
+│   └── styles/         tokens.css, global.css
+└── .github/workflows/  deploy.yml
 ```
 
----
+## Design language
 
-## ملاحظة عن الهوية
+An industrial corporate world: hazard stripes, serial numbers, employee badges, system alerts, and an "Impact Canister" gauge.
+Flat colors and hard shadows, with almost no gradients. Ripple animations appear only on meaningful events: a score is added, a level changes, a page loads.
 
-RIPPLEIN LTD. عالم أصلي بالكامل. فكرة «شركة بتجمع طاقة» مصدر إلهام عام فقط — مفيش أي أصول أو أسماء أو تصميمات منقولة من أي عمل محمي بحقوق نشر.
+Palette: `#FFC400` yellow · `#0A0A0A` black · `#FFFFFF` white · `#1769FF` blue · `#FF2B8A` pink.
+
+RIPPLEIN LTD. is an original fictional universe. No assets or branding are borrowed from any other work.
