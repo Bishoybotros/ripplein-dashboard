@@ -42,7 +42,7 @@ Level thresholds are configurable from the Settings sheet, not hard-coded.
 ### Participant
 
 <p align="center">
-  <img src="docs/screenshots/participant-login.png" width="23%" alt="Employee login with Employee ID and PIN">
+  <img src="participant-login.png" width="23%" alt="Employee login with Employee ID and PIN">
   <img src="docs/screenshots/participant-dashboard.png" width="23%" alt="Participant dashboard showing points, level and rank">
   <img src="docs/screenshots/participant-history.png" width="23%" alt="Impact history with categories and timestamps">
   <img src="docs/screenshots/radar.png" width="23%" alt="Ripple Radar live ranking with progress bars">
